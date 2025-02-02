@@ -1,0 +1,150 @@
+{% extends 'members/base.html' %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Upload Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Resume Optimizer</h2>
+            {% if has_current_resume %}
+                <div class="mb-4 text-gray-600">
+                    Current resume detected. You can optimize your existing resume or upload a new one.
+                </div>
+            {% endif %}
+            <form id="resumeForm" class="space-y-4">
+                {% csrf_token %}
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <input type="file" id="resumeFile" accept=".pdf" class="hidden">
+                    <label for="resumeFile" class="cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">Drag and drop your resume PDF or click to upload</p>
+                    </label>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700">
+                    Analyze & Optimize
+                </button>
+            </form>
+        </div>
+
+        <!-- Results Section (Initially Hidden) -->
+        <div id="resultsSection" class="hidden space-y-6">
+            <!-- Scores -->
+            <div class="grid grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">Current Resume Score</h3>
+                    <div class="text-4xl font-bold text-indigo-600">
+                        <span id="currentScore">0</span>%
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">Optimized Score</h3>
+                    <div class="text-4xl font-bold text-green-600">
+                        <span id="optimizedScore">0</span>%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suggestions -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-4">Optimization Suggestions</h3>
+                <ul id="suggestionsList" class="space-y-2"></ul>
+            </div>
+
+            <!-- Optimized Content -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-4">Optimized Content</h3>
+                <div id="optimizedContent" class="whitespace-pre-wrap text-gray-700 mb-4"></div>
+                
+                <!-- Confirmation Buttons -->
+                <div class="flex justify-end space-x-4">
+                    <button id="rejectBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Keep Current Resume
+                    </button>
+                    <button id="confirmBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        Apply Optimization
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('resumeFile');
+    const formData = new FormData();
+    
+    if (fileInput.files[0]) {
+        formData.append('resume', fileInput.files[0]);
+    }
+    
+    try {
+        const response = await fetch('/optimize-resume/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            showResults(data);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error optimizing resume: ' + error);
+    }
+});
+
+document.getElementById('confirmBtn').addEventListener('click', async () => {
+    try {
+        const response = await fetch('/apply-optimization/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Resume successfully updated!');
+            window.location.href = '/profile/'; // Redirect to profile page
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error applying optimization: ' + error);
+    }
+});
+
+document.getElementById('rejectBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to keep your current resume?')) {
+        window.location.href = '/profile/';
+    }
+});
+
+function showResults(data) {
+    document.getElementById('resultsSection').classList.remove('hidden');
+    document.getElementById('currentScore').textContent = data.current_score;
+    document.getElementById('optimizedScore').textContent = data.optimized_score;
+    
+    const suggestionsList = document.getElementById('suggestionsList');
+    suggestionsList.innerHTML = data.suggestions
+        .map(suggestion => `
+            <li class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                ${suggestion}
+            </li>
+        `)
+        .join('');
+    
+    document.getElementById('optimizedContent').textContent = data.optimized_text;
+}
+</script>
+{% endblock %}

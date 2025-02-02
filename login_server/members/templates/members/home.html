@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResumeAI Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-indigo-600">ResumeAI</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'login' %}" class="px-4 py-2 text-gray-600 hover:text-gray-900">Login</a>
+                    <a href="{% url 'register' %}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="bg-white">
+        <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24">
+            <div class="text-center">
+                <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+                    Elevate Your Career with AI
+                </h1>
+                <p class="mt-4 text-xl text-gray-500">
+                    Smart resume analysis and career optimization for college students
+                </p>
+                <div class="mt-8 flex justify-center">
+                    <a href="{% url 'register' %}" class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-2">Resume Analysis</h3>
+                <p class="text-gray-600">AI-powered resume scoring and optimization suggestions</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-2">Skill Assessment</h3>
+                <p class="text-gray-600">Evaluate and track your technical competencies</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-2">Job Matching</h3>
+                <p class="text-gray-600">Connect with employers based on your profile score</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

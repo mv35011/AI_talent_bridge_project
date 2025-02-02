@@ -1,0 +1,91 @@
+<!-- templates/members/career_roadmap.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Roadmap - ResumeAI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white shadow rounded-lg p-6 mb-6">
+                <h1 class="text-3xl font-bold mb-6 text-indigo-600">Career Development Roadmap</h1>
+
+                {% if error %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                {% if not roadmap %}
+                <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-gray-700 text-lg font-medium mb-2">Upload Your Resume (PDF)</label>
+                        <input type="file" name="resume" accept=".pdf" required
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-lg font-medium mb-2">Select Career Path</label>
+                        <select name="career_path" required
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="web_dev">Web Development</option>
+                            <option value="ai_ml">AI/ML Development</option>
+                            <option value="android_dev">Android Development</option>
+                        </select>
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg text-lg font-medium hover:bg-indigo-700 transition duration-200">
+                        Generate Career Roadmap
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if roadmap %}
+                <div class="space-y-8">
+                    <div class="bg-indigo-50 rounded-xl p-6">
+                        <h2 class="text-2xl font-bold text-indigo-600 mb-6">Career Path: {{ career_path }}</h2>
+                        <div class="space-y-8">
+                            {% for stage in roadmap.stages %}
+                            <div class="relative pl-8 border-l-4 border-indigo-500">
+                                <div class="absolute -left-3 top-0 w-6 h-6 bg-indigo-500 rounded-full"></div>
+                                <div class="ml-4">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ stage.title }}</h3>
+                                    <p class="text-gray-600 mb-4">{{ stage.description }}</p>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <h4 class="font-semibold text-indigo-600 mb-2">Key Skills to Develop:</h4>
+                                        <ul class="grid grid-cols-2 gap-2">
+                                            {% for skill in stage.skills %}
+                                            <li class="flex items-center">
+                                                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                {{ skill }}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="flex justify-between">
+                        <a href="{% url 'career_roadmap' %}"
+                           class="inline-block bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 transition duration-200">
+                            Generate New Roadmap
+                        </a>
+                        <a href="{% url 'dashboard' %}"
+                           class="inline-block bg-indigo-500 text-white py-2 px-6 rounded-lg hover:bg-indigo-600 transition duration-200">
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

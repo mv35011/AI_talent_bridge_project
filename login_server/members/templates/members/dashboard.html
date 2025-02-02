@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ResumeAI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-indigo-800 text-white">
+            <div class="p-4">
+                <h1 class="text-2xl font-bold">ResumeAI</h1>
+            </div>
+            <nav class="mt-8">
+                <a href="{% url 'dashboard' %}" class="flex items-center py-3 px-6 bg-indigo-900">
+                    <i class="fas fa-home mr-3"></i>
+                    Home
+                </a>
+                <a href="#" class="flex items-center py-3 px-6 hover:bg-indigo-700">
+                    <i class="fas fa-tools mr-3"></i>
+                    Tools
+                </a>
+                <a href="#" class="flex items-center py-3 px-6 hover:bg-indigo-700">
+                    <i class="fas fa-trophy mr-3"></i>
+                    Rankings
+                </a>
+                <a href="#" class="flex items-center py-3 px-6 hover:bg-indigo-700">
+                    <i class="fas fa-info-circle mr-3"></i>
+                    About
+                </a>
+                <div class="mt-auto py-3 px-6 text-sm">
+                    Version 1.0
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- User Profile Section -->
+            <div class="bg-white shadow m-6 rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold">{{ user_profile.full_name }}</h2>
+                        <div class="mt-2 flex gap-2">
+                            {% for skill in user_profile.skills %}
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm">
+                                {{ skill }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-indigo-600">{{ user_profile.score }}%</div>
+                        <div class="text-sm text-gray-500">Overall Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="mx-6 mb-4">
+                <div class="flex items-center space-x-4">
+                    <select id="skillFilter" class="p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Skills</option>
+                        <option value="AI_ML">AI/ML</option>
+                        <option value="WEB_DEV">Web Development</option>
+                        <option value="ANDROID">Android Development</option>
+                    </select>
+                    <button onclick="applyFilter()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        Apply Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Rankings -->
+            <div class="m-6">
+                <h3 class="text-xl font-bold mb-4">Top Candidates</h3>
+                <div id="profileList" class="bg-white shadow rounded-lg">
+                    {% for profile in top_profiles %}
+                    <div class="profile-item p-4 border-b {% if profile.user == request.user %}bg-indigo-50{% endif %} hover:bg-gray-50"
+                         data-skills='{{ profile.skills|safe }}'>
+                        <div class="flex items-center justify-between">
+                            <a href="{% url 'profile_detail' profile.user.id %}" class="flex-1">
+                                <div class="flex items-center">
+                                    <div class="ml-4">
+                                        <div class="font-semibold">{{ profile.full_name }}</div>
+                                        <div class="text-sm text-gray-500">{{ profile.department }}</div>
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="flex items-center gap-4">
+                                <div class="text-xl font-bold text-indigo-600">{{ profile.score }}%</div>
+                                <button class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                    Hire
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function applyFilter() {
+            const skillFilter = document.getElementById('skillFilter').value;
+            const profiles = document.querySelectorAll('.profile-item');
+
+            profiles.forEach(profile => {
+                const skills = JSON.parse(profile.dataset.skills);
+                if (!skillFilter || skills.includes(skillFilter)) {
+                    profile.style.display = 'block';
+                } else {
+                    profile.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

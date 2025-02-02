@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Assistant - ResumeAI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <div class="w-64 bg-blue-600 text-white">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold">Career AI</h1>
+            </div>
+            <nav class="mt-6">
+                <a href="{% url 'home' %}" class="flex items-center py-3 px-6 hover:bg-blue-700">
+                    <i class="fas fa-home mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="flex items-center py-3 px-6 bg-blue-700">
+                    <i class="fas fa-comments mr-3"></i>
+                    Career Chat
+                </a>
+            </nav>
+        </div>
+
+        <div class="flex-1 flex flex-col">
+            <div class="bg-white shadow-sm p-6">
+                <h2 class="text-xl font-bold text-gray-800">Career Assistant</h2>
+                <p class="text-gray-600 mt-1">Get expert guidance for your career journey</p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 bg-gray-50" id="chat-messages">
+                <div class="space-y-6">
+                    {% for message in chat_history %}
+                        <div class="flex {% if message.is_user %}justify-end{% endif %}">
+                            <div class="flex items-start max-w-xl {% if message.is_user %}flex-row-reverse{% endif %}">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 rounded-full {% if message.is_user %}bg-blue-500{% else %}bg-gray-500{% endif %} flex items-center justify-center text-white">
+                                        <i class="fas {% if message.is_user %}fa-user{% else %}fa-robot{% endif %}"></i>
+                                    </div>
+                                </div>
+                                <div class="mx-3 p-4 rounded-xl shadow-sm {% if message.is_user %}bg-blue-500 text-white{% else %}bg-white text-gray-800{% endif %}">
+                                    {{ message.content|safe }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-white border-t p-6">
+                <form id="chat-form" class="flex space-x-4">
+                    {% csrf_token %}
+                    <input type="text"
+                           name="message"
+                           class="flex-1 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Ask about career advice, jobs, or skills..."
+                           autocomplete="off">
+                    <button type="submit"
+                            class="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors flex items-center space-x-2">
+                        <span>Send</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const chatMessages = document.getElementById('chat-messages');
+        let isProcessing = false;
+
+        function formatMarkdown(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>')
+                .replace(/\* (.*?)(?=\n|$)/g, '<li class="ml-4">$1</li>')
+                .replace(/\n\n/g, '<br><br>');
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const div = document.createElement('div');
+            div.className = 'flex justify-start typing-indicator';
+            div.innerHTML = `
+                <div class="flex items-start max-w-xl">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                    </div>
+                    <div class="mx-3 p-4 rounded-xl shadow-sm bg-white text-gray-800">
+                        <div class="flex space-x-2">
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(div);
+            scrollToBottom();
+            return div;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.querySelector('.typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function appendMessage(content, isUser) {
+            const div = document.createElement('div');
+            div.className = `flex ${isUser ? 'justify-end' : 'justify-start'} mt-6`;
+            const formattedContent = isUser ? content : formatMarkdown(content);
+
+            div.innerHTML = `
+                <div class="flex items-start max-w-xl ${isUser ? 'flex-row-reverse' : ''}">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full ${isUser ? 'bg-blue-500' : 'bg-gray-500'} flex items-center justify-center text-white">
+                            <i class="fas ${isUser ? 'fa-user' : 'fa-robot'}"></i>
+                        </div>
+                    </div>
+                    <div class="mx-3 p-4 rounded-xl shadow-sm ${isUser ? 'bg-blue-500 text-white' : 'bg-white text-gray-800'}">
+                        ${formattedContent}
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(div);
+            scrollToBottom();
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (isProcessing) return;
+
+            const formData = new FormData(chatForm);
+            const message = formData.get('message');
+
+            if (!message.trim()) return;
+
+            appendMessage(message, true);
+            chatForm.reset();
+
+            isProcessing = true;
+            const typingIndicator = showTypingIndicator();
+
+            try {
+                const response = await fetch('{% url "chat_response" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                });
+
+                const data = await response.json();
+                removeTypingIndicator();
+
+                if (data.error) {
+                    appendMessage('I apologize, but I\'m having trouble. Could you rephrase your question?', false);
+                } else {
+                    appendMessage(data.response, false);
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                appendMessage('I apologize, but I\'m having trouble connecting. Please try again.', false);
+            } finally {
+                isProcessing = false;
+            }
+        });
+
+        scrollToBottom();
+    </script>
+</body>
+</html>
