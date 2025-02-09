@@ -21,9 +21,9 @@ AI-Powered Talent Bridge is an **AI-driven career guidance platform** that helps
 - **Backend:** Django, Flask  
 - **AI Models:** BERT, LLaMA  
 - **APIs:** Google Gemini API  
-- **Database:** PostgreSQL  
+- **Database:** SQLite  
 
 ---
 
-## 📂 Project Structure  
+
 
